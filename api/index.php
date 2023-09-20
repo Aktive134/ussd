@@ -27,10 +27,23 @@ $app->post('/', function (Request $request, Response $response) {
     try {
         if ($text == '' && !$isRegistered) {
             // User is registered and string is empty
+            $menu->mainMenuRegistered();
         } elseif ($text == '' && $isRegistered) {
             // User is unregistered and string is empty
+            $menu->mainMenuUnRegistered();
         } elseif ($text !== '' && $isRegistered) {
             // User is unregistered and string is not empty
+            $textArray = explode('*', $text);
+            switch ($textArray[0]) {
+                case 1:
+                    $menu->subMenuUnRegisteredOne();
+                    break;
+                case 2:
+                    $menu->subMenuUnRegisteredTwo();
+                    break;
+                default:
+                    echo 'END Invalid choice. Thanks for using Bivety Bank';
+            }
         } elseif ($text !== '' && !$isRegistered) {
             // User is registered and string is not empty
         }
