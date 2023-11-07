@@ -25,13 +25,16 @@
             $level = count($textArray);
 
             if($level == 1) {
-                echo 'CON Please enter your Full Name:';
+                $message = 'CON Please enter your Full Name:';
+                echo $message;
 
             } else if ($level == 2) {
-                echo 'CON Please enter set your PIN:';
+                $message = 'CON Please enter set your PIN:';
+                echo $message;
 
             } else if ($level == 3) {
-                echo 'CON Please re-enter your PIN'; 
+                $message = 'CON Please re-enter your PIN';
+                echo $message; 
 
             } else if ($level == 4) {
                 $name = $textArray[1];
@@ -39,17 +42,15 @@
                 $pin2 = $textArray[3];
 
                 if ($pin != $pin2) {
-                    echo 'END Your pins do not match, Try again';
+                    $message = 'END Your pins do not match, Try again';
+                    echo $message;
                 } else {
                     //register user in the database;
                     //Send an SMS;
-                    echo 'END  Dear '. $name . ' You have successfully been registered';
+                    $message = 'END  Dear '. $name . ' You have successfully been registered';
+                    echo $message;
                 }
             }
-
-
-            // $message =  "END Your number has been recorded, we would get back to you";
-            // echo $message;
         }
         
         public function subMenuUnRegisteredTwo(){
@@ -57,13 +58,121 @@
             echo $message;
         }
 
-        public function sendMoneyMenu () {}
-        public function withdrawMoneyMenu () {}
-        public function checkBalanceMenu () {}
+        public function sendMoneyMenu ($textArray) {
+            $level = count($textArray);
+            switch ($level) {
+                case 1:
+                    $message =  'CON Enter Mobile Number of the receiver:';
+                    echo $message;
+                    break;
+                case 2:
+                    $message =  'CON Enter the AMOUNT you want to send:';
+                    echo $message;
+                    break;
+                case 3:
+                    $message =  'CON Enter your PIN:';
+                    echo $message;
+                    break;
+                case 4:
+                    $message = 'CON You have requested to send the sum of ' . '$'. $textArray[2] . ' to ' . $textArray[1] .
+                    "\n" .
+                    "\n1. Confirm" .
+                    "\n2. Cancel" .
+                    "\n" . Util::$GO_BACK . " Back" .
+                    "\n" . Util::$GO_TO_MAIN_MENU . " Main Menu";
+                    echo $message;
+                    break;
+                case 5:
+                    if($textArray[4] == 1) {
+                        //confirm transaction;
+                        //send money + process;
+                        //check if pin is correct
+                        //check for available funds before transfer
+                        $message = 'END Thank you, Your request is been processed';
+                        echo $message;
 
+                    } else if ($textArray[4] == 2){
+                        //cancel transaction;
+                        $message = 'END Thank you for using our service';
+                        echo $message;
 
+                    } else if ($textArray[4] == Util::$GO_BACK){
+                        $message = 'END You have requested to go back one step';
+                        echo $message;
 
+                    } else if ($textArray[4] == Util::$GO_TO_MAIN_MENU){
+                        $message = 'END You have requested to go to main menu';
+                        echo $message;
+                    }
+                    break;
 
+                default:
+                    $message = 'END Invalid Entry, Please try again';
+                    echo $message;
+                } 
+        }
+        public function withdrawMoneyMenu ($textArray) {
+            $level = count($textArray);
+            switch($level){
+                case 1:
+                    $message = 'CON Enter Agent Number:';
+                    echo $message;
+                    break;
+                case 2:
+                    $message = 'CON Enter the AMOUNT:';
+                    echo $message;
+                    break;
+                case 3:
+                    $message = 'CON Enter your PIN:';
+                    echo $message;
+                    break;
+                case 4:
+                    $message = 'CON Withdraw ' . '$' . $textArray[2] . ' from Agent ' . $textArray[1] . ':' .
+                    "\n1. Confirm" .
+                    "\n2. Cancel" .
+                    "\n" . Util::$GO_BACK . " Back" .
+                    "\n" . Util::$GO_TO_MAIN_MENU . " Main Menu";
+                    echo $message;
+                    break;
+                case 5:
+                    if ($textArray[4] == 1) {
+                        $message = 'END You have request is been processed.';
+                        echo $message;
+
+                    } else if ($textArray[4] == 2) {
+                        $message = 'END You request has been canceled.';
+                        echo $message;
+                        
+                    } else if ($textArray[4] == Util::$GO_BACK) {
+                        $message = 'END You have requested to go back one step';
+                        echo $message;
+
+                    } else if ($textArray[4] == Util::$GO_TO_MAIN_MENU) {
+                        $message = 'END You have requested to go to main menu';
+                        echo $message;
+                    }
+                    break;
+                default:
+                    $message = 'END Invalid Entry, Please try again';
+                    echo $message;
+            }
+        }
+        public function checkBalanceMenu ($textArray) {
+            $level = count($textArray);
+            switch($level){
+                case 1: 
+                    $message = 'CON Please Enter Your PIN:';
+                    echo $message;
+                    break;
+                case 2:
+                    $message = 'END We are processing your request, you will receive an SMS shortly';
+                    echo $message;
+                    break;
+                default:
+                    $message = 'END Invalid Entry, Please try again';
+                    echo $message;
+            }
+        }
     }
 
 ?>

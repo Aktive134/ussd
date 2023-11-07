@@ -18,7 +18,7 @@ $app->post('/', function (Request $request, Response $response) {
     $phone = $_POST['phoneNumber'];
     $text = $_POST['text'];
 
-    $isRegistered = true;
+    $isRegistered = false;
 
     // Create an object instance of the class Menu
     $menu = new Menu($text, $sessionId);
