@@ -21,7 +21,8 @@ $app->post('/', function (Request $request, Response $response) {
     $isRegistered = false;
 
     // Create an object instance of the class Menu
-    $menu = new Menu($text, $sessionId);
+    $menu = new Menu();
+    $text = $menu->middleware($text);
     $util = new Util();
 
     try {

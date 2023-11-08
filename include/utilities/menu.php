@@ -75,7 +75,6 @@
                     break;
                 case 4:
                     $message = 'CON You have requested to send the sum of ' . '$'. $textArray[2] . ' to ' . $textArray[1] .
-                    "\n" .
                     "\n1. Confirm" .
                     "\n2. Cancel" .
                     "\n" . Util::$GO_BACK . " Back" .
@@ -172,6 +171,29 @@
                     $message = 'END Invalid Entry, Please try again';
                     echo $message;
             }
+        }
+
+        public function middleware($text) {
+            //remove entries for going back and going to the main menu;
+           return $this->goBack($this->goToMainMenu($text));
+        }
+
+        public function goBack($text) {
+            $explodedText = explode("*", $text);
+            while(array_search(Util::$GO_BACK, $explodedText) != false) {
+                $firstIndex = array_search(Util::$GO_BACK, $explodedText);
+                array_splice($explodedText, $firstIndex - 1, 2);
+            }
+            return join("*", $explodedText); 
+        }
+
+        public function goToMainMenu($text) {
+            $explodedText = explode("*", $text);
+            while(array_search(Util::$GO_TO_MAIN_MENU, $explodedText) != false) {
+                $firstIndex = array_search(Util::$GO_TO_MAIN_MENU, $explodedText);
+                $explodedText = array_slice($explodedText, $firstIndex + 1);
+            }
+            return join("*", $explodedText);
         }
     }
 
