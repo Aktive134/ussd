@@ -11,6 +11,7 @@ require '../vendor/autoload.php';
 $app = AppFactory::create();
 $app->setBasePath('/ussd/api');
 
+
 $app->post('/', function (Request $request, Response $response) {
     // Read the variables sent via POST from our API
     $sessionId = $_POST['sessionId'];
