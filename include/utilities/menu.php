@@ -1,13 +1,14 @@
 <?php
     require_once '../include/utilities/util.php';
+    require_once '../api/user/user.php';
         class Menu {
         protected $text;
         protected $sessionId;
 
         function __construct() {}
 
-        public function mainMenuRegistered(){
-            $message = "CON Welcome to Bivety Bank. Would you like to: " .
+        public function mainMenuRegistered($name){
+            $message = "CON Welcome " . $name . " to Bivety Bank. Would you like to: " .
             "\n1. Send Money" .
             "\n2. Withdraw Money" .
             "\n3. Check Balance";
@@ -18,10 +19,12 @@
             $message = "CON Welcome to Bivety Bank .Unfortunately, we can't see your number in our system. Would you like to Register? " .
 			"\n1. Yes" .
 			"\n2. No";
-            echo $message;
+            return $message;
+            //echo $message;
+            //return $message;
         }
 
-        public function registerMenu($textArray){
+        public function registerMenu($textArray, $phone, $pdo){
             $level = count($textArray);
 
             if($level == 1) {
@@ -46,6 +49,11 @@
                     echo $message;
                 } else {
                     //register user in the database;
+                    $user = new User($phone);
+                    $user->setName($name);
+                    $user->setPin($pin);
+                    $user->setBalance(Util::$USER_INI_BALANCE);
+                    $user->register($pdo);
                     //Send an SMS;
                     $message = 'END  Dear '. $name . ' You have successfully been registered';
                     echo $message;
