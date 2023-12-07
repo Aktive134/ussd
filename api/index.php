@@ -25,62 +25,67 @@ $app->post('/', function (Request $request, Response $response) use($pdo, $nowti
     $text = $_POST['text'];
     $user = new User($phone);
     $menu = new Menu();
-    $text = $menu->middleware($text);
+    $text = $menu->middleware($text, $user, $sessionId, $pdo);
     $util = new Util();
+    $message = "";
+    $name = $user->readName($pdo);
 
     try {
         if ($text == '' && $user->isUserRegistered($pdo)) {
             // User is registered and string is empty
-            $name = $user->readName($pdo);
-            $menu->mainMenuRegistered($name);
-
+            $message = "CON " . $menu->mainMenuRegistered($name);
+    
         } elseif ($text == '' && !$user->isUserRegistered($pdo)) {
             // User is unregistered and string is empty
-             $message = $menu->mainMenuUnRegistered();
-             echo $message;
-            //  //return $response->getBody()->write(json_encode($message));
-            //  $response->getBody()->write(json_encode($message));
-            //  return $response->withStatus(200);
-
+            $message = $menu->mainMenuUnRegistered();
+           
         } elseif ($text !== '' && !$user->isUserRegistered($pdo)) {
             // User is unregistered and string is not empty
             $textArray = explode('*', $text);
             switch ($textArray[0]) {
                 case 1:
-                    $menu->registerMenu($textArray, $phone, $pdo);
+                    $message = $menu->registerMenu($textArray, $phone, $pdo);
                     break;
                 case 2:
-                    $menu->subMenuUnRegisteredTwo();
+                    $message = $menu->subMenuUnRegisteredTwo();
                     break;
                 default:
-                    echo 'END Invalid choice. Please try again. Thanks for using Bivety Bank';
+                    $message = 'END Invalid choice. Please try again. Thanks for using Bivety Bank';
             }
+            $response->getBody()->write($message);
+			return $response->withHeader('Content-Type', 'text/plain');
+
         } elseif ($text !== '' && $user->isUserRegistered($pdo)) {
             // User is registered and string is not empty
             $textArray = explode('*', $text);
 
             switch ($textArray[0]) {
                 case 1:
-                    $menu->sendMoneyMenu($textArray);
+                    $message = $menu->sendMoneyMenu($textArray);
                     break;
                 case 2:
-                    $menu->withdrawMoneyMenu($textArray);
+                    $message = $menu->withdrawMoneyMenu($textArray);
                     break;
                 case 3:
-                    $menu->checkBalanceMenu($textArray);
+                    $message = $menu->checkBalanceMenu($textArray);
                     break;  
                 default:
-                    echo 'END Invalid choice. Please try again. Thanks for using Bivety Bank';
+                    $ussdLevel = count($textArray) - 1;
+                    $menu->persistInvalidEntry($sessionId, $user, $ussdLevel, $pdo);
+                    $message = "CON Invalid choice.\n" . $menu->mainMenuRegistered($name);
                     break;
             } 
-
+           
+        } else {
+            $response->getBody()->write('An error had occurred.');
+			return $response->withHeader('Content-Type', 'text/plain');
         }
+            $response->getBody()->write($message);
+            return $response->withHeader('Content-Type', 'text/plain');
+
     } catch (PDOException $e) {
-        $failed = [
-            'status' => 'error',
-            'message' => 'An error had occurred.' . $e,
-        ];
-        return json_encode($failed);
+            $response->getBody()->write(json_encode('An error had occurred.' . $e));
+            return $response->withHeader('Content-Type', 'application/json');
     }
 });
 

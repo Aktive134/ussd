@@ -68,11 +68,31 @@
             $row = $stmt->fetch();
             return $row['name'];
         }
-        public function readUserId ($pdo) {}
-        public function correctPin ($pdo) {}
-        public function checkBalance ($pdo) {}
+        public function readUserId ($pdo) {
+            $stmt = $pdo->prepare("SELECT uid FROM users WHERE phone = ?");
+            $stmt->execute([$this->getPhone()]);
+            $user = $stmt->fetch();
+            return $user['uid']; 
+        }
+        public function correctPin ($pdo) {
+            $stmt = $pdo->prepare("SELECT pin FROM users WHERE phone=?");
+            $stmt->execute([$this->getPhone()]);
+            $row = $stmt->fetch();
+            if($row == null){
+                return false;
+            }
 
-
-
+            if(password_verify($this->getPin(), $row['pin'])){
+                return true;
+            }
+            return false;
+        }
+        public function checkBalance ($pdo) {
+            $stmt = $pdo->prepare("SELECT balance FROM users WHERE phone=?");
+            $stmt->execute([$this->getPhone()]);
+            $row = $stmt->fetch();
+            return $row['balance'];
+        }
+          
     }
 ?>
