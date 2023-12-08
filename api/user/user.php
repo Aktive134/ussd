@@ -45,7 +45,7 @@
                 $stmt = $pdo->prepare("INSERT INTO users (name, pin, phone, balance) values (?,?,?,?)");
                 $stmt->execute([$this->getName(),$hashedPin, $this->getPhone(), $this->getBalance()]);
             } catch (PDOException $e) {
-                echo $e->getMessage();
+                return $e->getMessage();
             }
         }
         public function isUserRegistered ($pdo) {
@@ -59,7 +59,7 @@
                 }
             }
             catch(PDOException $e) {
-                echo $e->getMessage();
+                return $e->getMessage();
             }
         }
         public function readName ($pdo) {

@@ -1,6 +1,7 @@
 <?php
     require_once '../include/utilities/util.php';
     require_once '../api/user/user.php';
+    require_once '../api/transaction/transaction.php';
         class Menu {
         protected $text;
         protected $sessionId;
@@ -63,8 +64,11 @@
             }
         }
         
-        public function sendMoneyMenu ($textArray) {
+        public function sendMoneyMenu ($textArray, $sender, $pdo, $sessionId) {
             $level = count($textArray);
+            $receiver = null;
+            $nameOfReceiver = null;
+            $message = "";
             switch ($level) {
                 case 1:
                     $message =  'CON Enter Mobile Number of the receiver:';
@@ -79,7 +83,11 @@
                     return $message;
                     break;
                 case 4:
-                    $message = 'CON You have requested to send the sum of ' . '$'. $textArray[2] . ' to ' . $textArray[1] .
+                    $receiverNumber = $textArray[1];
+                    $formatReceiverNumber = $this->addCountryCodeToPhone($receiverNumber);
+                    $receiver = new User($formatReceiverNumber);
+                    $receiverName = $receiver->readName($pdo);
+                    $message = 'CON You have requested to send the sum of ' . '$'. $textArray[2] . ' to ' . $nameOfReceiver .
                     "\n1. Confirm" .
                     "\n2. Cancel" .
                     "\n" . Util::$GO_BACK . " Back" .
@@ -88,11 +96,27 @@
                     break;
                 case 5:
                     if($textArray[4] == 1) {
-                        //confirm transaction;
-                        //send money + process;
-                        //check if pin is correct
-                        //check for available funds before transfer
-                        $message = 'END Thank you, Your request is been processed';
+                        //process the transaction;
+                        $pin = $textArray[3];
+                        $amount = $textArray[2];
+                        $ttype = 'send';
+                        $sender->setPin($pin);
+                        $newSenderBalance = $sender->checkBalanceMenu($pdo) - $amount - Util::$TRANSACTION_FEE;
+                        $receiver = new User($this_>addCountryCodeToPhone($textArray[1]));
+                        $newReceiverBalance = $receiver->checkBalanceMenu($pdo) + $amount;
+                        
+                        if($sender->correctPin($pdo) == false){
+                            $message = 'END Incorrect PIN, please try again';
+                        } else {
+                            $trx_action = new Transaction($amount, $ttype);
+                            $result = $trx_action->sendMoney($pdo, $sender->readUserId($pdo), $receiver->readUserId($pdo), $newSenderBalance, $newReceiverBalance);
+                            if($result) {
+                                $message = 'END We are processing your request, you will receive an SMS shortly';
+                                //send an SMS;
+                            } else {
+                                $message = 'END ' . $result; 
+                            }
+                        }
                         return $message;
 
                     } else if ($textArray[4] == 2){
@@ -226,9 +250,17 @@
             return join("*", $responseArray);
         }
 
-        public function addCountryCodeToPhone ($phone) {
-            return Util::$COUNTRY_CODE .  substr($phone, 1);
+        public function addCountryCodeToPhone($phone) {
+            // Check if the phone number starts with '0'
+            if (substr($phone, 0, 1) === '0') {
+                return Util::$COUNTRY_CODE . substr($phone, 1);
+            } elseif (substr($phone, 0, 4) === Util::$COUNTRY_CODE) {
+                return $phone;
+            } else {
+                return $phone;
+            }
         }
+        
     }
 
 ?>
