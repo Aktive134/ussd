@@ -20,10 +20,6 @@
 
         public function sendMoney($pdo, $uid, $ruid, $newSenderBalance, $newReceiverBalance) {
             $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, FALSE);
-            $data = [
-                $pdo, $uid, $ruid, $newSenderBalance, $newReceiverBalance, $this->getAmount(), $this->getTType()
-            ];
-
             try{
                 $pdo->beginTransaction();
                 $stmtT = $pdo->prepare("INSERT INTO transactions ( amount, uid, ruid, ttype ) VALUES (?,?,?,?)");
