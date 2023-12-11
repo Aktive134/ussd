@@ -87,7 +87,7 @@
                     $formatReceiverNumber = $this->addCountryCodeToPhone($receiverNumber);
                     $receiver = new User($formatReceiverNumber);
                     $receiverName = $receiver->readName($pdo);
-                    $message = 'CON You have requested to send the sum of ' . '$'. $textArray[2] . ' to ' . $nameOfReceiver .
+                    $message = 'CON You have requested to send the sum of ' . '$'. $textArray[2] . ' to ' . $receiverName .
                     "\n1. Confirm" .
                     "\n2. Cancel" .
                     "\n" . Util::$GO_BACK . " Back" .
@@ -101,9 +101,9 @@
                         $amount = $textArray[2];
                         $ttype = 'send';
                         $sender->setPin($pin);
-                        $newSenderBalance = $sender->checkBalanceMenu($pdo) - $amount - Util::$TRANSACTION_FEE;
-                        $receiver = new User($this_>addCountryCodeToPhone($textArray[1]));
-                        $newReceiverBalance = $receiver->checkBalanceMenu($pdo) + $amount;
+                        $newSenderBalance = $sender->checkBalance($pdo) - $amount - Util::$TRANSACTION_FEE;
+                        $receiver = new User($this->addCountryCodeToPhone($textArray[1]));
+                        $newReceiverBalance = $receiver->checkBalance($pdo) + $amount;
                         
                         if($sender->correctPin($pdo) == false){
                             $message = 'END Incorrect PIN, please try again';
@@ -185,7 +185,7 @@
                     return $message;
             }
         }
-        public function checkBalanceMenu ($textArray) {
+        public function checkBalanceMenu ($textArray, $user, $pdo) {
             $level = count($textArray);
             switch($level){
                 case 1: 
@@ -193,6 +193,14 @@
                     return $message;
                     break;
                 case 2:
+                    $user->setPin($textArray[1]);
+                    if($user->correctPin($pdo) == true){
+                        $message = 'END Your wallet balance is: ' . $user->checkBalance($pdo); //send SMS!
+                        return $message;
+                    } else {
+                        $message = 'END You have typed a wrong PIN, Please try again';
+                        return $message;
+                    }
                     $message = 'END We are processing your request, you will receive an SMS shortly';
                     return $message;
                     break;
@@ -202,9 +210,9 @@
             }
         }
 
-        public function middleware($text, $user, $sessionId, $pdo) {
+        public function middleware($text, $sessionId, $pdo) {
             //remove entries for going back and going to the main menu;
-           return $this->invalidEntry($this->goBack($this->goToMainMenu($text)), $user, $sessionId, $pdo);
+           return $this->invalidEntry($this->goBack($this->goToMainMenu($text)), $sessionId, $pdo);
         }
 
         public function goBack($text) {
@@ -225,15 +233,15 @@
             return join("*", $explodedText);
         }
 
-        public function persistInvalidEntry($sessionId, $user, $ussdLevel, $pdo) {
-            $stmt = $pdo->prepare("INSERT INTO ussdsession (sessionId, ussdLevel, uid) VALUES (?,?,?)");
-            $stmt->execute([$sessionId, $ussdLevel, $user->readUserId($pdo)]);
+        public function persistInvalidEntry($sessionId, $ussdLevel, $pdo) {
+            $stmt = $pdo->prepare("INSERT INTO ussdsession (sessionId, ussdLevel) VALUES (?,?)");
+            $stmt->execute([$sessionId, $ussdLevel]);
             $stmt = null;
         }
 
-        public function invalidEntry($ussdStr, $user, $sessionId, $pdo) {
-            $stmt = $pdo->prepare("SELECT ussdLevel FROM ussdsession WHERE sessionId =? AND uid=?");
-            $stmt->execute([$sessionId, $user->readUserId($pdo)]);
+        public function invalidEntry($ussdStr, $sessionId, $pdo) {
+            $stmt = $pdo->prepare("SELECT ussdLevel FROM ussdsession WHERE sessionId =?");
+            $stmt->execute([$sessionId]);
             $results = $stmt->fetchAll();
 
             if(count($results) == 0){

@@ -25,21 +25,21 @@ $app->post('/', function (Request $request, Response $response) use($pdo, $nowti
     $text = $_POST['text'];
     $user = new User($phone);
     $menu = new Menu();
-    $text = $menu->middleware($text, $user, $sessionId, $pdo);
+    $text = $menu->middleware($text, $sessionId, $pdo);
     $util = new Util();
     $message = "";
-    $name = $user->readName($pdo);
 
     try {
-        if ($text == '' && $user->isUserRegistered($pdo)) {
+        if ($text == '' && $user->isUserRegistered($pdo) == true) {
             // User is registered and string is empty
+            $name = $user->readName($pdo);
             $message = "CON " . $menu->mainMenuRegistered($name);
     
-        } elseif ($text == '' && !$user->isUserRegistered($pdo)) {
+        } elseif ($text == '' && $user->isUserRegistered($pdo) == false) {
             // User is unregistered and string is empty
             $message = $menu->mainMenuUnRegistered();
            
-        } elseif ($text !== '' && !$user->isUserRegistered($pdo)) {
+        } elseif ($text !== '' && $user->isUserRegistered($pdo) == false) {
             // User is unregistered and string is not empty
             $textArray = explode('*', $text);
             switch ($textArray[0]) {
@@ -52,12 +52,11 @@ $app->post('/', function (Request $request, Response $response) use($pdo, $nowti
                 default:
                     $message = 'END Invalid choice. Please try again. Thanks for using Bivety Bank';
             }
-            $response->getBody()->write($message);
-			return $response->withHeader('Content-Type', 'text/plain');
 
-        } elseif ($text !== '' && $user->isUserRegistered($pdo)) {
+        } elseif ($text !== '' && $user->isUserRegistered($pdo) == true) {
             // User is registered and string is not empty
             $textArray = explode('*', $text);
+            $name = $user->readName($pdo);
 
             switch ($textArray[0]) {
                 case 1:
@@ -67,11 +66,11 @@ $app->post('/', function (Request $request, Response $response) use($pdo, $nowti
                     $message = $menu->withdrawMoneyMenu($textArray);
                     break;
                 case 3:
-                    $message = $menu->checkBalanceMenu($textArray);
+                    $message = $menu->checkBalanceMenu($textArray, $user, $pdo);
                     break;  
                 default:
                     $ussdLevel = count($textArray) - 1;
-                    $menu->persistInvalidEntry($sessionId, $user, $ussdLevel, $pdo);
+                    $menu->persistInvalidEntry($sessionId, $ussdLevel, $pdo);
                     $message = "CON Invalid choice.\n" . $menu->mainMenuRegistered($name);
                     break;
             } 
