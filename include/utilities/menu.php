@@ -2,6 +2,7 @@
     require_once '../include/utilities/util.php';
     require_once '../api/user/user.php';
     require_once '../api/transaction/transaction.php';
+    require_once '../api/agent/agent.php';
         class Menu {
         protected $text;
         protected $sessionId;
@@ -139,8 +140,15 @@
                     return $message;
                 } 
         }
-        public function withdrawMoneyMenu ($textArray) {
+        public function withdrawMoneyMenu ($textArray, $user, $pdo) {
             $level = count($textArray);
+            $agent = new Agent($textArray[1]);
+            $agent_num = $textArray[1];
+            $aid = $agent->readAgentId($pdo);
+            $uid = $user->readUserId($pdo);
+            $withdraw_amount = $textArray[2];
+            $withdraw_pin = $textArray[3];
+            $ttype = "withdraw";
             switch($level){
                 case 1:
                     $message = 'CON Enter Agent Number:';
@@ -155,7 +163,8 @@
                     return $message;
                     break;
                 case 4:
-                    $message = 'CON Withdraw ' . '$' . $textArray[2] . ' from Agent ' . $textArray[1] . ':' .
+                    $agentName = $agent->readAgentName($pdo);
+                    $message = 'CON Withdraw ' . '$' . $textArray[2] . ' from Agent ' . $agentName . ':' .
                     "\n1. Confirm" .
                     "\n2. Cancel" .
                     "\n" . Util::$GO_BACK . " Back" .
@@ -164,8 +173,26 @@
                     break;
                 case 5:
                     if ($textArray[4] == 1) {
-                        $message = 'END You have request is been processed.';
-                        return $message;
+                        $user->setPin($withdraw_pin);
+                        if($user->correctPin($pdo)) {
+                            $message = 'END Wrong PIN inputted, please try again.';
+                            return $message;
+                        }
+                        if($user->checkBalance($pdo) < ($textArray[2] + Util::$TRANSACTION_FEE)){
+                            $message = 'END Insufficient Balance, Please try again later';
+                            return $message;
+                        }
+                        $trxn = new Transaction($withdraw_amount, $ttype);
+                        $newBalance = $user->checkBalance($pdo) - $withdraw_amount - Util::$TRANSACTION_FEE;
+                        $result = $trxn->withdrawMoney($pdo, $uid, $aid, $newBalance);
+
+                        if($result == true) {
+                            $message = 'END You have request is been processed.';
+                            return $message;
+                        } else {
+                            $message = 'END ' . $result;
+                            return $message;
+                        }
 
                     } else if ($textArray[4] == 2) {
                         $message = 'END You request has been canceled.';

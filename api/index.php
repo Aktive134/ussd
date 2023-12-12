@@ -63,7 +63,7 @@ $app->post('/', function (Request $request, Response $response) use($pdo, $nowti
                     $message = $menu->sendMoneyMenu($textArray, $user, $pdo, $sessionId);
                     break;
                 case 2:
-                    $message = $menu->withdrawMoneyMenu($textArray);
+                    $message = $menu->withdrawMoneyMenu($textArray, $user, $pdo);
                     break;
                 case 3:
                     $message = $menu->checkBalanceMenu($textArray, $user, $pdo);

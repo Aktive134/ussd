@@ -38,15 +38,25 @@
             }
         }
 
-        public function withdrawMoney($pdo, $uid, $aid, $newSenderBalance) {
+        public function withdrawMoney($pdo, $uid, $aid, $newWithBalance) {
+            $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, FALSE);
 
+            try {
+                $pdo->beginTransaction(); 
+                $stmtT = $pdo->prepare("INSERT INTO transactions ( amount, uid, aid, ttype ) VALUES (?,?,?,?)");
+                $stmtU = $pdo->prepare("UPDATE users SET balance=? WHERE uid=?");
+
+                $stmtT->execute([$this->getAmount(), $uid, $aid, $this->getTType()]);
+                $stmtU->execute([$newWithBalance, $uid]);
+                $pdo->commit();
+                return true; 
+
+            } catch (PDOException $e) {
+                $pdo->rollBack();
+                return 'An Error Occured while processing your request';
+            }
         }
 
-
-
-    }
-
-
-
+}
 
 ?>
