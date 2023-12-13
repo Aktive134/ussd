@@ -19,13 +19,15 @@
         }
 
         public function sendMoney($pdo, $uid, $ruid, $newSenderBalance, $newReceiverBalance) {
+            $ttype = $this->getTType();
+            $amount = $this->getAmount();
             $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, FALSE);
             try{
                 $pdo->beginTransaction();
                 $stmtT = $pdo->prepare("INSERT INTO transactions ( amount, uid, ruid, ttype ) VALUES (?,?,?,?)");
                 $stmtU = $pdo->prepare("UPDATE users SET balance=? WHERE uid=?");
 
-                $stmtT->execute([$this->getAmount(), $uid, $ruid, $this->getTType()]);
+                $stmtT->execute([$amount, $uid, $ruid, $ttype]);
                 $stmtU->execute([$newSenderBalance, $uid]);
                 $stmtU->execute([$newReceiverBalance, $ruid]);
 
@@ -39,14 +41,16 @@
         }
 
         public function withdrawMoney($pdo, $uid, $aid, $newWithBalance) {
+            $ttype = $this->getTType();
+            $amount = $this->getAmount();
             $pdo->setAttribute(PDO::ATTR_AUTOCOMMIT, FALSE);
 
             try {
-                $pdo->beginTransaction(); 
+                $pdo->beginTransaction();
                 $stmtT = $pdo->prepare("INSERT INTO transactions ( amount, uid, aid, ttype ) VALUES (?,?,?,?)");
                 $stmtU = $pdo->prepare("UPDATE users SET balance=? WHERE uid=?");
 
-                $stmtT->execute([$this->getAmount(), $uid, $aid, $this->getTType()]);
+                $stmtT->execute([$amount, $uid, $aid, $ttype]);
                 $stmtU->execute([$newWithBalance, $uid]);
                 $pdo->commit();
                 return true; 

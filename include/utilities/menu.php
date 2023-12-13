@@ -142,12 +142,12 @@
         }
         public function withdrawMoneyMenu ($textArray, $user, $pdo) {
             $level = count($textArray);
-            $agent = new Agent($textArray[1]);
-            $agent_num = $textArray[1];
-            $aid = $agent->readAgentId($pdo);
+            // $agent = new Agent($textArray[1]);
+            // $agent_num = $textArray[1];
+            // $aid = $agent->readAgentId($pdo);
             $uid = $user->readUserId($pdo);
-            $withdraw_amount = $textArray[2];
-            $withdraw_pin = $textArray[3];
+            // $withdraw_amount = $textArray[2];
+            // $withdraw_pin = $textArray[3];
             $ttype = "withdraw";
             switch($level){
                 case 1:
@@ -163,6 +163,7 @@
                     return $message;
                     break;
                 case 4:
+                    $agent = new Agent($textArray[1]);
                     $agentName = $agent->readAgentName($pdo);
                     $message = 'CON Withdraw ' . '$' . $textArray[2] . ' from Agent ' . $agentName . ':' .
                     "\n1. Confirm" .
@@ -173,8 +174,10 @@
                     break;
                 case 5:
                     if ($textArray[4] == 1) {
+                        $withdraw_amount = $textArray[2];
+                        $withdraw_pin = $textArray[3];
                         $user->setPin($withdraw_pin);
-                        if($user->correctPin($pdo)) {
+                        if($user->correctPin($pdo) == false) {
                             $message = 'END Wrong PIN inputted, please try again.';
                             return $message;
                         }
@@ -182,12 +185,15 @@
                             $message = 'END Insufficient Balance, Please try again later';
                             return $message;
                         }
+                        $agent = new Agent($textArray[1]);
+                        $agent_num = $textArray[1];
+                        $aid = $agent->readAgentId($pdo);
                         $trxn = new Transaction($withdraw_amount, $ttype);
                         $newBalance = $user->checkBalance($pdo) - $withdraw_amount - Util::$TRANSACTION_FEE;
                         $result = $trxn->withdrawMoney($pdo, $uid, $aid, $newBalance);
 
                         if($result == true) {
-                            $message = 'END You have request is been processed.';
+                            $message = 'END Your request is been processed.';
                             return $message;
                         } else {
                             $message = 'END ' . $result;
