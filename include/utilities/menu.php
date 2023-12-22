@@ -2,6 +2,7 @@
     require_once '../include/utilities/util.php';
     require_once '../api/user/user.php';
     require_once '../api/transaction/transaction.php';
+    require_once '../api/sms/sms.php';
     require_once '../api/agent/agent.php';
         class Menu {
         protected $text;
@@ -142,12 +143,7 @@
         }
         public function withdrawMoneyMenu ($textArray, $user, $pdo) {
             $level = count($textArray);
-            // $agent = new Agent($textArray[1]);
-            // $agent_num = $textArray[1];
-            // $aid = $agent->readAgentId($pdo);
             $uid = $user->readUserId($pdo);
-            // $withdraw_amount = $textArray[2];
-            // $withdraw_pin = $textArray[3];
             $ttype = "withdraw";
             switch($level){
                 case 1:
@@ -189,7 +185,7 @@
                         $agent_num = $textArray[1];
                         $aid = $agent->readAgentId($pdo);
                         $trxn = new Transaction($withdraw_amount, $ttype);
-                        $newBalance = $user->checkBalance($pdo) - $withdraw_amount - Util::$TRANSACTION_FEE;
+                        $newBalance = $user->checkBalance($pdo) - $withdraw_amount - Util::$TRANSACTION_FEE; 
                         $result = $trxn->withdrawMoney($pdo, $uid, $aid, $newBalance);
 
                         if($result == true) {
@@ -228,7 +224,16 @@
                 case 2:
                     $user->setPin($textArray[1]);
                     if($user->correctPin($pdo) == true){
-                        $message = 'END Your wallet balance is: ' . $user->checkBalance($pdo); //send SMS!
+                        $msg = 'Your wallet balance is: ' . $user->checkBalance($pdo) . ' Thank you for using Bivety.';
+                        $sms = new SMS($user->getPhone());
+                        $result = $sms->sendSMS($msg);
+
+                        if ($result['status'] == 'success') {
+                            $message = 'END You will receive an SMS shortly';
+                        } else {
+                            $message = 'END Something went wrong, please try again ';
+                        }
+                        
                         return $message;
                     } else {
                         $message = 'END You have typed a wrong PIN, Please try again';

@@ -89,3 +89,6 @@ $app->post('/', function (Request $request, Response $response) use($pdo, $nowti
 });
 
 $app->run();
+
+
+?>
