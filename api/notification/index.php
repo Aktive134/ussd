@@ -42,11 +42,5 @@ $app->post('/', function(Request $request, Response $response) use($pdo) {
     }
 });
 
-// $app->get('/note', function (Request $request, Response $response) {
-//     $res =  "I dey here";
-//     $response->getBody()->write(json_encode($res));
-//     return $response->withHeader('Content-Type', 'application/json');
-// });
-
 $app->run();
 ?>

@@ -1,5 +1,5 @@
 # Bivety Bank APP (USSD)
-This application simulates a banking system, where users can make transactions via USSD.
+This application simulates a ussd process, where users can make transactions via USSD.
 
 # Database Design
 - Entities
@@ -26,3 +26,12 @@ Description:
 - sid: session Id
 - ruid: receiver Id
 - ttype: withdraw (withdraw), send money (send)
+
+# Extras 
+The ussd 3rd party used is Africastalking:
+ussd documentation: https://developers.africastalking.com/docs/ussd/overview
+sms documentation: https://developers.africastalking.com/docs/sms/overview
+
+- Testing of the application process was achieved through ngrok.
+- You will need to get a link via ngrok and utilize it as your callback url to the app on AT sandbox.
+- Util.php file is exposed on purpose, it contains basic static information and apiKey for sms.
